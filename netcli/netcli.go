@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	cli "lstfight.cn/go-pra/netcli/cmd"
 	"os"
@@ -18,19 +17,20 @@ type NetCmd interface {
 
 func main() {
 	root := cobra.Command{
-		Use:   "netcli",
-		Long:  "like netasist for a network tool",
-		Short: "ddd",
-		Run: func(cmd *cobra.Command, args []string) {
-			// 传入的command为
-			fmt.Println(args)
-		},
+		Use:     "netcli",
+		Long:    "like netasist for a network tool",
+		Short:   "ddd",
+		Version: "1.0.0",
 	}
 
-	root.AddCommand(cli.Tcp{}.Cmd())
-	root.AddCommand(cli.TcpServer{}.Cmd())
+	// child command
+	tcp := cli.Tcp{}.Cmd()
+	root.AddCommand(tcp)
+	tcpServer := cli.TcpServer{}.Cmd()
+	root.AddCommand(tcpServer)
 	root.AddCommand(cli.Udp{}.Cmd())
 
+	// exec root command
 	err := root.Execute()
 	if err != nil {
 		os.Exit(1)
