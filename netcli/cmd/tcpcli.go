@@ -12,3 +12,17 @@ func (netT Tcp) Cmd() *cobra.Command {
 		Run:  CommonProcess,
 	}
 }
+
+func (netT Tcp) Start() error {
+
+	return nil
+}
+
+func (netT Tcp) Read() []byte {
+
+	return nil
+}
+
+func (netT Tcp) Write(d []byte) {
+
+}
