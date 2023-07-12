@@ -15,13 +15,27 @@ type NetCmd interface {
 	Execute()
 }
 
+// flag option arg
+// 执行shell脚本时是没有这些区分 可都视作参数
+// flag 或 option
+
 func main() {
 	root := cobra.Command{
 		Use:     "netcli",
-		Long:    "like netasist for a network tool",
+		Long:    "like netAssist for a network tool",
 		Short:   "ddd",
 		Version: "1.0.0",
 	}
+
+	// 配置全局flg
+	root.PersistentFlags().StringVarP(&cli.FlagContext.Encode, "encode", "e", "hex",
+		"data encode hex x or ascii a")
+	root.PersistentFlags().Uint16VarP(&cli.FlagContext.Port, "port", "p", 6111,
+		"port to connect and bind if not listen port")
+	root.PersistentFlags().IntVarP(&cli.FlagContext.ListenPort, "listen-port", "l", 6111,
+		"port to connect and bind if not listen port")
+	root.PersistentFlags().IntVarP(&cli.FlagContext.ConnectTimeOut, "con-time", "c", 3,
+		"connect timeout")
 
 	// child command
 	tcp := cli.Tcp{}.Cmd()
