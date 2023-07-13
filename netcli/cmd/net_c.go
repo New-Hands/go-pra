@@ -11,6 +11,8 @@ type NetCh interface {
 	Read() []byte
 
 	Write(d []byte)
+
+	Stop() error
 }
 
 // create net component

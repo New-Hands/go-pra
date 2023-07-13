@@ -5,7 +5,7 @@ import "github.com/spf13/cobra"
 type Tcp struct {
 }
 
-func (netT Tcp) Cmd() *cobra.Command {
+func TcpCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:  "tcp",
 		Long: "create tcp communication",
@@ -13,16 +13,15 @@ func (netT Tcp) Cmd() *cobra.Command {
 	}
 }
 
-func (netT Tcp) Start() error {
+func (netT *Tcp) Start() error {
+	return nil
+}
+
+func (netT *Tcp) Read() []byte {
 
 	return nil
 }
 
-func (netT Tcp) Read() []byte {
-
-	return nil
-}
-
-func (netT Tcp) Write(d []byte) {
+func (netT *Tcp) Write(d []byte) {
 
 }

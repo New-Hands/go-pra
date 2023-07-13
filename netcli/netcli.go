@@ -38,11 +38,9 @@ func main() {
 		"connect timeout")
 
 	// child command
-	tcp := cli.Tcp{}.Cmd()
-	root.AddCommand(tcp)
-	tcpServer := cli.TcpServer{}.Cmd()
-	root.AddCommand(tcpServer)
-	root.AddCommand(cli.Udp{}.Cmd())
+	root.AddCommand(cli.TcpCmd())
+	root.AddCommand(cli.TcpServerCmd())
+	root.AddCommand(cli.UdpCmd())
 
 	// exec root command
 	err := root.Execute()

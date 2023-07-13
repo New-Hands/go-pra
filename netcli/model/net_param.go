@@ -10,7 +10,7 @@ const (
 
 type NetParam struct {
 	Ip             string
-	Port           uint16
+	Port           int
 	ListenPort     int
 	ConnectTimeOut int
 	ReceiveTimeOut int

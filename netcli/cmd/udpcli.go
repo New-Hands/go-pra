@@ -5,24 +5,24 @@ import "github.com/spf13/cobra"
 type Udp struct {
 }
 
-func (netT Udp) Cmd() *cobra.Command {
+func UdpCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:  "udp",
-		Long: "\"create tcp communication",
+		Long: "create tcp communication",
 		Run:  CommonProcess,
 	}
 }
 
-func (netT Udp) Start() error {
+func (netT *Udp) Start() error {
 
 	return nil
 }
 
-func (netT Udp) Read() []byte {
+func (netT *Udp) Read() []byte {
 
 	return nil
 }
 
-func (netT Udp) Write(d []byte) {
+func (netT *Udp) Write(d []byte) {
 
 }
