@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"lstfight.cn/go-pra/netcli/model"
 	"net"
 	"testing"
 )
@@ -26,4 +27,19 @@ func TestClient(t *testing.T) {
 	}
 
 	fmt.Println(string(readBytes[:read]))
+}
+
+func TestWrapClient(t *testing.T) {
+	tcp := &Tcp{
+		NetParam: model.NetParam{
+			Ip:   "127.0.0.1",
+			Port: 6001,
+		},
+	}
+
+	err := tcp.Start()
+	if err != nil {
+		return
+	}
+
 }

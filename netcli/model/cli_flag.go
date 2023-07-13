@@ -4,7 +4,7 @@ type CliFlags struct {
 	// 连接超时时间 单位秒
 	ConnectTimeOut int
 	// 端口
-	Port uint16
+	Port int
 	// 监听端口
 	ListenPort int
 	// ip

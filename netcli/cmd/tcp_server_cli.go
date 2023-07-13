@@ -8,6 +8,7 @@ import (
 
 type TcpServer struct {
 	netParam model.NetParam
+	connMap  map[string]net.Conn
 }
 
 func TcpServerCmd() *cobra.Command {
@@ -24,8 +25,8 @@ func (netT *TcpServer) Start() error {
 	addr := net.TCPAddr{
 		Port: port,
 	}
-
 	server, err := net.ListenTCP("tcp", &addr)
+
 	if err != nil {
 		return err
 	}
@@ -45,4 +46,8 @@ func (netT *TcpServer) Read() []byte {
 func (netT *TcpServer) Write(d []byte) {
 	// 获取到 client socket 进行发送
 
+}
+
+func (netT *TcpServer) Stop() error {
+	return nil
 }

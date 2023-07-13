@@ -30,7 +30,7 @@ func main() {
 	// 配置全局flg
 	root.PersistentFlags().StringVarP(&cli.FlagContext.Encode, "encode", "e", "hex",
 		"data encode hex x or ascii a")
-	root.PersistentFlags().Uint16VarP(&cli.FlagContext.Port, "port", "p", 6111,
+	root.PersistentFlags().IntVarP(&cli.FlagContext.Port, "port", "p", 6111,
 		"port to connect and bind if not listen port")
 	root.PersistentFlags().IntVarP(&cli.FlagContext.ListenPort, "listen-port", "l", 6111,
 		"port to connect and bind if not listen port")

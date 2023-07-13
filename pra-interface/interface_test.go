@@ -52,4 +52,7 @@ func TestItFun(t *testing.T) {
 	fmt.Println(tt)
 }
 
-// 熟悉有哪些 内置接口
+// struct to be interface must impl all method
+func TestFun2(t *testing.T) {
+	//var s2 it3 = sToIt{}
+}

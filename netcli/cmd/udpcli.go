@@ -26,3 +26,7 @@ func (netT *Udp) Read() []byte {
 func (netT *Udp) Write(d []byte) {
 
 }
+
+func (netT *Udp) Stop() error {
+	return nil
+}

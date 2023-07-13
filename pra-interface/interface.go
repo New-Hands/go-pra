@@ -10,6 +10,11 @@ type it1 interface {
 	Hello()
 }
 
+type it3 interface {
+	Hello()
+	Hello2()
+}
+
 type sToIt struct {
 }
 
