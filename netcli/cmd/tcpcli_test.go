@@ -32,8 +32,9 @@ func TestClient(t *testing.T) {
 func TestWrapClient(t *testing.T) {
 	tcp := &Tcp{
 		NetParam: model.NetParam{
-			Ip:   "127.0.0.1",
-			Port: 6001,
+			Ip:             "127.0.0.1",
+			Port:           6001,
+			ReceiveTimeOut: 10,
 		},
 	}
 
@@ -41,5 +42,8 @@ func TestWrapClient(t *testing.T) {
 	if err != nil {
 		return
 	}
+	read := tcp.Read()
+	read = tcp.Read()
 
+	fmt.Println(string(read))
 }

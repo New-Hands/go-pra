@@ -17,8 +17,12 @@ type NetCh interface {
 
 // create net component
 func newNet(p model.NetParam) NetCh {
+
 	switch p.Type {
 	case 1:
+		return &Tcp{
+			NetParam: p,
+		}
 	case 2:
 	case 3:
 	default:

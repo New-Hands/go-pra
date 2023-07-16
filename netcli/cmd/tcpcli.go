@@ -7,6 +7,7 @@ import (
 	"lstfight.cn/go-pra/netcli/model"
 	"net"
 	"strconv"
+	"time"
 )
 
 type Tcp struct {
@@ -27,14 +28,19 @@ func (netT *Tcp) Start() error {
 	if err != nil {
 		return err
 	}
+
 	netT.conn = dial
 	return nil
 }
 
 func (netT *Tcp) Read() []byte {
+	rt := netT.NetParam.ReceiveTimeOut
+	if rt > 0 {
+		_ = netT.conn.SetReadDeadline(time.Now().Add(time.Duration(rt) * time.Second))
+	}
 	all, err := io.ReadAll(netT.conn)
 	if err != nil && nil != io.EOF {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	return all
@@ -43,11 +49,15 @@ func (netT *Tcp) Read() []byte {
 func (netT *Tcp) Write(d []byte) {
 	write, err := netT.conn.Write(d)
 	if err != nil && err != io.EOF {
-		panic(err)
+		fmt.Println(err)
 	}
-	fmt.Printf("write %d bytes", write)
+	fmt.Printf("write %d bytes\n", write)
 }
 
 func (netT *Tcp) Stop() error {
+	err := netT.conn.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
