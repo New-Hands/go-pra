@@ -1,15 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/tjfoc/gmtls"
+	"os"
 )
 
 func main() {
-	var l, err = gmtls.Listen("tcp", "127.0.0.1", nil)
-	if nil != err {
-		fmt.Printf(err.Error())
+	reader := bufio.NewReader(os.Stdin)
+
+	readString, err1 := reader.ReadString('d')
+	if err1 != nil {
+		return
 	}
 
-	l.Accept()
+	fmt.Println(readString)
 }
