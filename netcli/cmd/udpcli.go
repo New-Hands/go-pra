@@ -10,7 +10,7 @@ import (
 type Udp struct {
 	netParam model.NetParam
 	conn     *net.UDPConn
-	defAddr  *net.UDPAddr
+	DefAddr  *net.UDPAddr
 }
 
 func UdpCmd() *cobra.Command {
@@ -27,7 +27,8 @@ func (netU *Udp) Start() error {
 	if lPort < 1 {
 		lPort = port
 	}
-	netU.defAddr = &net.UDPAddr{
+	// 后续使用可修改默认发送地址
+	netU.DefAddr = &net.UDPAddr{
 		IP:   net.ParseIP(netU.netParam.Ip),
 		Port: port,
 	}

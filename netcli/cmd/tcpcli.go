@@ -11,7 +11,7 @@ import (
 )
 
 type Tcp struct {
-	NetParam model.NetParam
+	netParam model.NetParam
 	conn     net.Conn
 }
 
@@ -24,7 +24,7 @@ func TcpCmd() *cobra.Command {
 }
 
 func (netT *Tcp) Start() error {
-	dial, err := net.Dial("tcp", netT.NetParam.Ip+":"+strconv.Itoa(netT.NetParam.Port))
+	dial, err := net.Dial("tcp", netT.netParam.Ip+":"+strconv.Itoa(netT.netParam.Port))
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (netT *Tcp) Start() error {
 }
 
 func (netT *Tcp) Read() []byte {
-	rt := netT.NetParam.ReceiveTimeOut
+	rt := netT.netParam.ReceiveTimeOut
 	if rt > 0 {
 		_ = netT.conn.SetReadDeadline(time.Now().Add(time.Duration(rt) * time.Second))
 	}

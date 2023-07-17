@@ -17,16 +17,21 @@ type NetCh interface {
 
 // create net component
 func newNet(p model.NetParam) NetCh {
-
 	switch p.Type {
 	case 1:
 		return &Tcp{
-			NetParam: p,
+			netParam: p,
 		}
 	case 2:
+		return &TcpServer{
+			netParam: p,
+		}
 	case 3:
+		return &Udp{
+			netParam: p,
+		}
 	default:
-		panic("")
+		panic("not match net type")
 	}
 	return nil
 }
@@ -55,6 +60,7 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 		Ip:   FlagContext.Ip,
 	}
 
+	// 创建网络组件
 	net := newNet(param)
 	err := net.Start()
 	if err != nil {
