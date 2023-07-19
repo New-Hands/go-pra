@@ -44,7 +44,7 @@ func (netT *Tcp) Read() (*model.MsgForm, error) {
 		// 关闭连接
 		if err == io.EOF {
 			_ = netT.conn.Close()
-			panic(err)
+			return nil, err
 		}
 		return nil, err
 	}

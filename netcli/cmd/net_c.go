@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"io"
 	"log"
 	"lstfight.cn/go-pra/netcli/model"
 	"lstfight.cn/go-pra/netcli/ui"
@@ -88,12 +89,18 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 				return "", err
 			}
 		}
+
+		// 发送消息
 		err := net.Write(&model.MsgTo{
 			Ip:   FlagContext.Ip,
 			Port: FlagContext.Port,
 			Data: toBytes,
 		})
 		if err != nil {
+			// 连接断开
+			if err == io.EOF {
+				return "(" + FlagContext.Ip + ":" + strconv.Itoa(FlagContext.Port) + "):disconnect", nil
+			}
 			return "", err
 		}
 
@@ -107,6 +114,9 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 			read, err := net.Read()
 			if nil != err {
 				p.Send(ui.NetInMsg(err.Error()))
+				if err == io.EOF {
+					p.Quit()
+				}
 				continue
 			}
 			switch FlagContext.Encode {

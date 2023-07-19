@@ -3,7 +3,36 @@ package pra_type
 import (
 	"fmt"
 	"testing"
+	"unsafe"
 )
+
+// // Assume T is an arbitrary type and Tkey is
+//// a type supporting comparison (== and !=).
+//
+//*T         // a pointer type
+//[5]T       // an array type
+//[]T        // a slice type
+//map[Tkey]T // a map type
+//
+//// a struct type
+//struct {
+//	name string
+//	age  int
+//}
+//
+//// a function type
+//func(int) (bool, string)
+//
+//// an interface type
+//interface {
+//	Method0(string) int
+//	Method1() (int, bool)
+//}
+//
+//// some channel types
+//chan T
+//chan<- T
+//<-chan T
 
 //  the difference between Unicode and UTF-8,
 // the difference between a string and a string literal, and other even more subtle distinctions.
@@ -20,6 +49,52 @@ func TestValueAndRef(t *testing.T) {
 	fmt.Printf("%p \n", m)
 	fmt.Printf("%p %s \n", &first, first)
 	fmt.Printf("%p %s \n", &second, second)
+}
+
+func TestStringArr(t *testing.T) {
+}
+
+type S1 struct {
+	i1  int32
+	str []string
+}
+type S2 struct {
+	i1  int64
+	str []string
+}
+
+func TestStruct(t *testing.T) {
+	// 内存对齐
+	fmt.Println(unsafe.Sizeof(S1{}))
+	fmt.Println(unsafe.Sizeof(S2{}))
+
+	// pointer
+	fmt.Println(unsafe.Sizeof(&S1{}))
+	fmt.Println(unsafe.Sizeof(&S2{}))
+	m := map[string]int{
+		"1": 1,
+		"3": 1,
+		"2": 1,
+	}
+	fmt.Println(unsafe.Sizeof(m))
+	fmt.Println(unsafe.Sizeof(&m))
+
+	// slice
+	fmt.Println("slice size")
+	fmt.Println(unsafe.Sizeof([5]string{}))
+	fmt.Println(unsafe.Sizeof([2]string{"dd", "dd"}))
+
+	// array
+	fmt.Println("array size")
+	fmt.Println(unsafe.Sizeof([]string{}))
+	fmt.Println(unsafe.Sizeof([]string{"dd", "dd"}))
+
+	fmt.Println("string var size", unsafe.Sizeof("ddd"))
+	fmt.Println("string var size", unsafe.Sizeof("dddd"))
+
+	fmt.Println(unsafe.Sizeof([]int{}))
+	fmt.Println(unsafe.Sizeof('b'))
+
 }
 
 func TestString(t *testing.T) {
@@ -50,12 +125,6 @@ func TestString(t *testing.T) {
 
 type Ts struct {
 	n string
-}
-
-func TestStruct(t *testing.T) {
-	tt := Ts{n: "type ts"}
-
-	fmt.Printf("%p \n", tt)
 }
 
 func TestSlice(t *testing.T) {
