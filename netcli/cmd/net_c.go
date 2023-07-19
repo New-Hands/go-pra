@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"encoding/hex"
+	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
+	dlog "lstfight.cn/go-pra/netcli/log"
 	"lstfight.cn/go-pra/netcli/model"
 	"lstfight.cn/go-pra/netcli/ui"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -77,6 +80,12 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	// 创建数据交互文件
+	open, fErr := os.OpenFile("netcli.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+	if fErr != nil {
+		fmt.Println(fErr)
+	}
+
 	// 创建数据交互面板
 	p := tea.NewProgram(ui.InitialModel(func(input string) (string, error) {
 		var toBytes []byte
@@ -105,6 +114,8 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 		}
 
 		sendTo := "(" + FlagContext.Ip + ":" + strconv.Itoa(FlagContext.Port) + "):" + input
+		dlog.Log(open, sendTo)
+
 		return sendTo, nil
 	}))
 
@@ -121,9 +132,13 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 			}
 			switch FlagContext.Encode {
 			case "ascii":
-				p.Send(ui.NetInMsg(read.ToString()))
+				recv := read.ToString()
+				p.Send(ui.NetInMsg(recv))
+				dlog.Log(open, recv)
 			default:
-				p.Send(ui.NetInMsg(read.ToHexString()))
+				recv := read.ToHexString()
+				p.Send(ui.NetInMsg(recv))
+				dlog.Log(open, recv)
 			}
 		}
 	}()

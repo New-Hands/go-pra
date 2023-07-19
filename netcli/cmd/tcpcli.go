@@ -38,7 +38,7 @@ func (netT *Tcp) Read() (*model.MsgForm, error) {
 		_ = netT.conn.SetReadDeadline(time.Now().Add(time.Duration(rt) * time.Second))
 	}
 
-	bytes := make([]byte, 128, 128)
+	bytes := make([]byte, 10240, 10240)
 	rNum, err := netT.conn.Read(bytes)
 	if err != nil {
 		// 关闭连接
