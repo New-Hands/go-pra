@@ -27,9 +27,13 @@ func TcpServerCmd() *cobra.Command {
 
 func (netT *TcpServer) Start() error {
 	port := netT.NetParam.Port
+	listenPort := netT.NetParam.ListenPort
+	if listenPort < 1 {
+		listenPort = port
+	}
 	// 地址参数
 	addr := net.TCPAddr{
-		Port: port,
+		Port: listenPort,
 	}
 	server, err := net.ListenTCP("tcp", &addr)
 
@@ -39,6 +43,7 @@ func (netT *TcpServer) Start() error {
 
 	// make chan
 	netT.channel = make(chan *model.MsgForm)
+	netT.connMap = map[string]net.Conn{}
 
 	// 接收client
 	go func() {
