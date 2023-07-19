@@ -17,7 +17,7 @@ type Udp struct {
 func UdpCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:  "udp",
-		Long: "create tcp communication",
+		Long: "create udp communication",
 		Run:  CommonProcess,
 	}
 }

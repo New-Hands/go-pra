@@ -38,7 +38,7 @@ func main() {
 		"connect timeout")
 	root.PersistentFlags().IntVarP(&cli.FlagContext.ReceiveTimeOut, "receive-time", "r", 0,
 		"connect timeout")
-	root.PersistentFlags().StringVarP(&cli.FlagContext.Ip, "ip", "", "127.0.0.1",
+	root.PersistentFlags().StringVarP(&cli.FlagContext.Ip, "ip", "i", "127.0.0.1",
 		"connect ip")
 
 	// child command

@@ -4,6 +4,7 @@ package ui
 // component library.
 import (
 	"fmt"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -39,23 +40,43 @@ func InitialModel(handle func(input string) (string, error)) Model {
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
 	ta.Focus()
-
 	ta.Prompt = "┃ "
 	ta.CharLimit = 280
-
 	ta.SetWidth(100)
 	ta.SetHeight(2)
-
 	// Remove cursor line styling
 	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
-
 	ta.ShowLineNumbers = false
-
-	vp := viewport.New(30, 5)
-	vp.SetContent(`Welcome to the chat room!
-Type a message and press Enter to send.`)
-
 	ta.KeyMap.InsertNewline.SetEnabled(false)
+
+	vp := viewport.New(30, 10)
+	// 修改keymap
+	vp.KeyMap = viewport.KeyMap{
+		PageDown: key.NewBinding(
+			key.WithKeys("pgdown"),
+			key.WithHelp("pgdn", "page down"),
+		),
+		PageUp: key.NewBinding(
+			key.WithKeys("pgup"),
+			key.WithHelp("pgup", "page up"),
+		),
+		HalfPageUp: key.NewBinding(
+			key.WithKeys("ctrl+u"),
+			key.WithHelp("ctrl+u", "half page up"),
+		),
+		HalfPageDown: key.NewBinding(
+			key.WithKeys("ctrl+d"),
+			key.WithHelp("ctrl+d", "half page down"),
+		),
+		Up: key.NewBinding(
+			key.WithKeys("up"),
+			key.WithHelp("↑", "up"),
+		),
+		Down: key.NewBinding(
+			key.WithKeys("down"),
+			key.WithHelp("↓", "down"),
+		),
+	}
 
 	return Model{
 		textarea:     ta,

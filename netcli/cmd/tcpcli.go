@@ -40,7 +40,12 @@ func (netT *Tcp) Read() (*model.MsgForm, error) {
 
 	bytes := make([]byte, 128, 128)
 	rNum, err := netT.conn.Read(bytes)
-	if err != nil && nil != io.EOF {
+	if err != nil {
+		// 关闭连接
+		if err == io.EOF {
+			_ = netT.conn.Close()
+			panic(err)
+		}
 		return nil, err
 	}
 
