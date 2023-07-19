@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	cli "lstfight.cn/go-pra/netcli/cmd"
 	"os"
-	"strconv"
-	"time"
 )
 
 // NetCmd receive NetCmd to get cobarCommand
@@ -23,30 +20,10 @@ type NetCmd interface {
 // flag 或 option
 
 func main() {
-	for i := 0; i < 20; i++ {
-		_, _ = fmt.Fprintf(os.Stdout, "\033[B")
-	}
-	go func() {
-		for i := 0; i < 20; i++ {
-			_, _ = fmt.Fprintf(os.Stdout, "\033[A")
-		}
-		for i := 0; i < 15; i++ {
-			time.Sleep(time.Second * 2)
-			_, _ = fmt.Fprintf(os.Stdout, "hello"+strconv.Itoa(i)+"\n")
-
-		}
-	}()
-
-	time.Sleep(10 * time.Second)
-	//
-	////reader := bufio.NewReader(os.Stdin)
-	//bytes, _ := reader.ReadBytes('d')
-	//fmt.Println(bytes)
-
 	root := cobra.Command{
 		Use:     "netcli",
 		Long:    "like netAssist for a network tool",
-		Short:   "ddd",
+		Short:   "net",
 		Version: "1.0.0",
 	}
 
@@ -55,10 +32,14 @@ func main() {
 		"data encode hex x or ascii a")
 	root.PersistentFlags().IntVarP(&cli.FlagContext.Port, "port", "p", 6111,
 		"port to connect and bind if not listen port")
-	root.PersistentFlags().IntVarP(&cli.FlagContext.ListenPort, "listen-port", "l", 6111,
+	root.PersistentFlags().IntVarP(&cli.FlagContext.ListenPort, "listen-port", "l", 6112,
 		"port to connect and bind if not listen port")
 	root.PersistentFlags().IntVarP(&cli.FlagContext.ConnectTimeOut, "con-time", "c", 3,
 		"connect timeout")
+	root.PersistentFlags().IntVarP(&cli.FlagContext.ReceiveTimeOut, "receive-time", "r", 0,
+		"connect timeout")
+	root.PersistentFlags().StringVarP(&cli.FlagContext.Ip, "ip", "", "127.0.0.1",
+		"connect ip")
 
 	// child command
 	root.AddCommand(cli.TcpCmd())

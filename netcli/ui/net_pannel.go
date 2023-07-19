@@ -1,0 +1,130 @@
+package ui
+
+// A simple program demonstrating the text area component from the Bubbles
+// component library.
+import (
+	"fmt"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/viewport"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"strings"
+)
+
+type NetInMsg string
+
+type (
+	errMsg error
+)
+
+// 控制和数据分离 框架调度model
+// a model that describes the application state and three simple methods on that model:
+// Init, a function that returns an initial command for the application to run.
+// Update, a function that handles incoming events and updates the model accordingly.
+// View, a function that renders the UI based on the data in the model.
+
+type Model struct {
+	viewport     viewport.Model
+	messages     []string
+	textarea     textarea.Model
+	senderStyle  lipgloss.Style
+	errorStyle   lipgloss.Style
+	receiveStyle lipgloss.Style
+	err          error
+	inputHandle  func(input string) (string, error)
+}
+
+// InitialModel m copy
+func InitialModel(handle func(input string) (string, error)) Model {
+	ta := textarea.New()
+	ta.Placeholder = "Send a message..."
+	ta.Focus()
+
+	ta.Prompt = "┃ "
+	ta.CharLimit = 280
+
+	ta.SetWidth(100)
+	ta.SetHeight(2)
+
+	// Remove cursor line styling
+	ta.FocusedStyle.CursorLine = lipgloss.NewStyle()
+
+	ta.ShowLineNumbers = false
+
+	vp := viewport.New(30, 5)
+	vp.SetContent(`Welcome to the chat room!
+Type a message and press Enter to send.`)
+
+	ta.KeyMap.InsertNewline.SetEnabled(false)
+
+	return Model{
+		textarea:     ta,
+		messages:     []string{},
+		viewport:     vp,
+		senderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		receiveStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00ff001d")),
+		errorStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")),
+		err:          nil,
+		inputHandle:  handle,
+	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return textarea.Blink
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		tiCmd tea.Cmd
+		vpCmd tea.Cmd
+	)
+
+	// update child
+	m.textarea, tiCmd = m.textarea.Update(msg)
+	m.viewport, vpCmd = m.viewport.Update(msg)
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyEsc:
+			fmt.Println(m.textarea.Value())
+			return m, tea.Quit
+		case tea.KeyEnter:
+			// 数据处理
+			pInput, err := m.inputHandle(m.textarea.Value())
+			if err != nil {
+				m.messages = append(m.messages, m.errorStyle.Render("error:")+err.Error())
+			} else {
+				// message addr change
+				m.messages = append(m.messages, m.senderStyle.Render("send:")+pInput)
+			}
+			m.viewport.SetContent(strings.Join(m.messages, "\n"))
+			m.textarea.Reset()
+			m.viewport.GotoBottom()
+		}
+
+	case tea.WindowSizeMsg:
+		// different code style
+		m.textarea.SetWidth(msg.Width)
+		m.viewport.Width = msg.Width
+	// We handle errors just like any other message
+	case errMsg:
+		m.err = msg
+		return m, nil
+	case NetInMsg:
+		m.messages = append(m.messages, m.receiveStyle.Render("receive:")+string(msg))
+		m.viewport.SetContent(strings.Join(m.messages, "\n"))
+		m.viewport.GotoBottom()
+	}
+
+	return m, tea.Batch(tiCmd, vpCmd)
+}
+
+// View 网络面板视图渲染数据
+func (m Model) View() string {
+	return fmt.Sprintf(
+		"%s\n\n%s",
+		m.viewport.View(),
+		m.textarea.View(),
+	) + "\n\n"
+}

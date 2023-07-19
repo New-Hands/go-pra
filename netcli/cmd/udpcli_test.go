@@ -23,7 +23,7 @@ func TestUdp(t *testing.T) {
 		return
 	}
 
-	//listen()
+	listen()
 
 	fromUDP, u, rErr := udp.ReadFromUDP(make([]byte, 2))
 	if err != nil {
@@ -40,16 +40,21 @@ func listen() {
 	if err1 != nil {
 		fmt.Println(err1)
 	}
-	readFromUDP, u2, err2 := listenUDP.ReadFromUDP(make([]byte, 1))
-	if err2 != nil {
-		fmt.Println(err2)
-	}
-	fmt.Println(u2, readFromUDP)
 
-	// echo
-	_, wErr := listenUDP.WriteToUDP([]byte("hello"), u2)
-	if wErr != nil {
-		fmt.Println(wErr)
+	bytes := make([]byte, 65535, 65535)
+
+	for true {
+		readFromUDP, u2, err2 := listenUDP.ReadFromUDP(bytes)
+		fmt.Printf("%p", bytes)
+		if err2 != nil {
+			fmt.Println(err2)
+		}
+		fmt.Println(u2, string(bytes[:readFromUDP]))
+		// echo
+		_, wErr := listenUDP.WriteToUDP([]byte("hello"), u2)
+		if wErr != nil {
+			fmt.Println(wErr)
+		}
 	}
 
 }
@@ -57,7 +62,7 @@ func listen() {
 func TestUdpCli(t *testing.T) {
 	// send to 127.0.0.1 6112 and bind
 	udp := Udp{
-		netParam: model.NetParam{
+		NetParam: model.NetParam{
 			Ip:         "127.0.0.1",
 			Port:       6114,
 			ListenPort: 666,
@@ -70,6 +75,5 @@ func TestUdpCli(t *testing.T) {
 		return
 	}
 
-	udp.Write([]byte("hello udp"))
 	fmt.Println(udp.Read())
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type TcpServer struct {
-	netParam model.NetParam
+	NetParam model.NetParam
 	connMap  map[string]net.Conn
 }
 
@@ -20,7 +20,7 @@ func TcpServerCmd() *cobra.Command {
 }
 
 func (netT *TcpServer) Start() error {
-	port := netT.netParam.Port
+	port := netT.NetParam.Port
 	// 地址参数
 	addr := net.TCPAddr{
 		Port: port,
@@ -38,14 +38,15 @@ func (netT *TcpServer) Start() error {
 	}
 }
 
-func (netT *TcpServer) Read() []byte {
+func (netT *TcpServer) Read() (*model.MsgForm, error) {
 
-	return nil
+	return nil, nil
 }
 
-func (netT *TcpServer) Write(d []byte) {
+func (netT *TcpServer) Write(to *model.MsgTo) error {
 	// 获取到 client socket 进行发送
 
+	return nil
 }
 
 func (netT *TcpServer) Stop() error {

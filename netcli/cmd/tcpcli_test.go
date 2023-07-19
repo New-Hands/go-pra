@@ -42,8 +42,9 @@ func TestWrapClient(t *testing.T) {
 	if err != nil {
 		return
 	}
-	read := tcp.Read()
-	read = tcp.Read()
-
-	fmt.Println(string(read))
+	read, err := tcp.Read()
+	if err != nil {
+		return
+	}
+	fmt.Println(read)
 }

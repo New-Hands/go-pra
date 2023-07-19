@@ -1,16 +1,22 @@
 package cmd
 
 import (
+	"encoding/hex"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"log"
 	"lstfight.cn/go-pra/netcli/model"
+	"lstfight.cn/go-pra/netcli/ui"
+	"strconv"
+	"strings"
 )
 
 type NetCh interface {
 	Start() error
 
-	Read() []byte
+	Read() (*model.MsgForm, error)
 
-	Write(d []byte)
+	Write(to *model.MsgTo) error
 
 	Stop() error
 }
@@ -18,17 +24,17 @@ type NetCh interface {
 // create net component
 func newNet(p model.NetParam) NetCh {
 	switch p.Type {
-	case 1:
+	case model.TCP:
 		return &Tcp{
-			netParam: p,
+			NetParam: p,
 		}
-	case 2:
+	case model.TcpServer:
 		return &TcpServer{
-			netParam: p,
+			NetParam: p,
 		}
-	case 3:
+	case model.UDP:
 		return &Udp{
-			netParam: p,
+			NetParam: p,
 		}
 	default:
 		panic("not match net type")
@@ -44,9 +50,9 @@ var FlagContext = model.CliFlags{
 	Encode:         "hex",
 }
 var cmdMap = map[string]model.NetType{
-	"tcp":       1,
-	"tcpserver": 2,
-	"udp":       3,
+	"tcp":       model.TCP,
+	"tcpserver": model.TcpServer,
+	"udp":       model.UDP,
 }
 
 // CommonProcess 指令模板方式处理
@@ -55,16 +61,64 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 	netType := cmdMap[use]
 
 	param := model.NetParam{
-		Type: netType,
-		Port: FlagContext.Port,
-		Ip:   FlagContext.Ip,
+		Type:           netType,
+		Port:           FlagContext.Port,
+		Ip:             FlagContext.Ip,
+		ListenPort:     FlagContext.ListenPort,
+		ConnectTimeOut: FlagContext.ConnectTimeOut,
+		ReceiveTimeOut: FlagContext.ReceiveTimeOut,
 	}
 
 	// 创建网络组件
 	net := newNet(param)
 	err := net.Start()
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
+	// 创建数据交互面板
+	p := tea.NewProgram(ui.InitialModel(func(input string) (string, error) {
+		var toBytes []byte
+		switch FlagContext.Encode {
+		case "ascii":
+			toBytes = []byte(input)
+		default:
+			toBytes, err = hex.DecodeString(strings.ReplaceAll(input, " ", ""))
+			if nil != err {
+				return "", err
+			}
+		}
+		err := net.Write(&model.MsgTo{
+			Ip:   FlagContext.Ip,
+			Port: FlagContext.Port,
+			Data: toBytes,
+		})
+		if err != nil {
+			return "", err
+		}
+
+		sendTo := "(" + FlagContext.Ip + ":" + strconv.Itoa(FlagContext.Port) + "):" + input
+		return sendTo, nil
+	}))
+
+	// 读取网络组件数据 发送到终端
+	go func() {
+		for true {
+			read, err := net.Read()
+			if nil != err {
+				p.Send(ui.NetInMsg(err.Error()))
+				continue
+			}
+			switch FlagContext.Encode {
+			case "ascii":
+				p.Send(ui.NetInMsg(read.ToString()))
+			default:
+				p.Send(ui.NetInMsg(read.ToHexString()))
+			}
+		}
+	}()
+
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
