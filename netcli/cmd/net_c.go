@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
@@ -90,6 +91,8 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 	}
 
 	// 创建数据交互面板
+	forceAnsi()
+
 	p := tea.NewProgram(ui.InitialModel(func(input string) (string, error) {
 		var toBytes []byte
 		switch FlagContext.Encode {
@@ -133,6 +136,17 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func forceAnsi() {
+	profile := termenv.EnvColorProfile()
+	if profile == termenv.Ascii {
+		// 强制设置颜色
+		envErr := os.Setenv("TERM", "linux")
+		if envErr != nil {
+			panic(envErr)
+		}
 	}
 }
 

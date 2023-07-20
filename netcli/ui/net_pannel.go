@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
+	"strconv"
 	"strings"
 )
 
@@ -37,6 +39,8 @@ type Model struct {
 
 // InitialModel m copy
 func InitialModel(handle func(input string) (string, error)) Model {
+	profile := termenv.EnvColorProfile()
+
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
 	ta.Focus()
@@ -77,14 +81,15 @@ func InitialModel(handle func(input string) (string, error)) Model {
 			key.WithHelp("↓", "down"),
 		),
 	}
+	vp.SetContent("netcli tool current profile: " + strconv.Itoa(int(profile)) + "\n")
 
 	return Model{
 		textarea:     ta,
 		messages:     []string{},
 		viewport:     vp,
 		senderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		receiveStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#00ff001d")),
-		errorStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0000")),
+		receiveStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
+		errorStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("1")),
 		err:          nil,
 		inputHandle:  handle,
 	}
@@ -132,12 +137,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// different code style
 		m.textarea.SetWidth(msg.Width)
 		m.viewport.Width = msg.Width
+		minH := 5
+		if msg.Width > 10 {
+			// 减去 textArea
+			minH = msg.Height - 5
+		}
+		m.viewport.Height = minH
 	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
 		return m, nil
 	case NetInMsg:
-		m.messages = append(m.messages, m.receiveStyle.Render("receive:")+string(msg))
+		elems := m.receiveStyle.Render("receive:") + string(msg)
+		fmt.Println([]byte(elems))
+		m.messages = append(m.messages, elems)
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 	}
