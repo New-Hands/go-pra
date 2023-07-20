@@ -51,6 +51,8 @@ func (netT *TcpServer) Start() error {
 			conn, _ := server.Accept()
 			remoteAddr := conn.RemoteAddr()
 			netT.connMap[remoteAddr.String()] = conn
+			// 读取线程数据
+			netT.readClient(conn)
 		}
 	}()
 
@@ -58,29 +60,7 @@ func (netT *TcpServer) Start() error {
 }
 
 func (netT *TcpServer) Read() (*model.MsgForm, error) {
-	for _, conn := range netT.connMap {
-		conn := conn
-		go func() {
-			bytes := make([]byte, 10240, 10240)
-			rNum, err := conn.Read(bytes)
-			if err != nil {
-				// 关闭连接
-				if err == io.EOF {
-					_ = conn.Close()
-				}
-			}
-
-			addPort, _ := netip.ParseAddrPort(conn.RemoteAddr().String())
-
-			// 将数据写入通道
-			netT.channel <- &model.MsgForm{
-				Data: bytes[:rNum],
-				Ip:   addPort.Addr().String(),
-				Port: int(addPort.Port()),
-			}
-		}()
-	}
-
+	// 从channel 获取数据
 	return <-netT.channel, nil
 }
 
@@ -109,4 +89,31 @@ func (netT *TcpServer) Stop() error {
 		return err
 	}
 	return nil
+}
+
+func (netT *TcpServer) readClient(conn net.Conn) {
+	// 获取客户端数据
+	go func() {
+		for true {
+			bytes := make([]byte, 10240, 10240)
+			rNum, err := conn.Read(bytes)
+			if err != nil {
+				// 关闭连接
+				if err == io.EOF {
+					_ = conn.Close()
+					// 删除记录
+					delete(netT.connMap, conn.RemoteAddr().String())
+					// 结束轮询获取
+					return
+				}
+			}
+			addPort, _ := netip.ParseAddrPort(conn.RemoteAddr().String())
+			// 将数据写入通道
+			netT.channel <- &model.MsgForm{
+				Data: bytes[:rNum],
+				Ip:   addPort.Addr().String(),
+				Port: int(addPort.Port()),
+			}
+		}
+	}()
 }
