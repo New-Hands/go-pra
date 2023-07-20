@@ -103,6 +103,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// update child
 	m.textarea, tiCmd = m.textarea.Update(msg)
 	m.viewport, vpCmd = m.viewport.Update(msg)
+	// 检查msg大小内存中只保存前100条
+	if len(m.messages) > 100 {
+		m.messages = m.messages[:100]
+	}
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
