@@ -1,10 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	cli "lstfight.cn/go-pra/netcli/cmd"
+	"lstfight.cn/go-pra/netcli/model"
 	"os"
 )
+
+var P = &model.NetParam{
+	Ip: "ddd",
+}
 
 // NetCmd receive NetCmd to get cobarCommand
 type NetCmd interface {
@@ -20,6 +26,7 @@ type NetCmd interface {
 // flag 或 option
 
 func main() {
+	fmt.Println(P)
 	root := cobra.Command{
 		Use:     "netcli",
 		Long:    "like netAssist for a network tool",

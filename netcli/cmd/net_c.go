@@ -63,6 +63,20 @@ var cmdMap = map[string]model.NetType{
 // 记录上一次数据来源
 var lastMsg *model.MsgForm
 
+func init() {
+	output := termenv.DefaultOutput()
+	profile := output.Profile
+	if profile == termenv.Ascii {
+		// 强制设置颜色
+		envErr := os.Setenv("TERM", "linux")
+		if envErr != nil {
+			panic(envErr)
+		}
+		// 重新计算profile
+		output.Profile = termenv.ColorProfile()
+	}
+}
+
 // CommonProcess 指令模板方式处理
 func CommonProcess(cmd *cobra.Command, args []string) {
 	use := cmd.Use
@@ -91,8 +105,6 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 	}
 
 	// 创建数据交互面板
-	forceAnsi()
-
 	p := tea.NewProgram(ui.InitialModel(func(input string) (string, error) {
 		var toBytes []byte
 		switch FlagContext.Encode {
@@ -136,17 +148,6 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func forceAnsi() {
-	profile := termenv.EnvColorProfile()
-	if profile == termenv.Ascii {
-		// 强制设置颜色
-		envErr := os.Setenv("TERM", "linux")
-		if envErr != nil {
-			panic(envErr)
-		}
 	}
 }
 

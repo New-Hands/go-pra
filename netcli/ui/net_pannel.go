@@ -39,7 +39,7 @@ type Model struct {
 
 // InitialModel m copy
 func InitialModel(handle func(input string) (string, error)) Model {
-	profile := termenv.EnvColorProfile()
+	profile := termenv.DefaultOutput().ColorProfile()
 
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
@@ -108,9 +108,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// update child
 	m.textarea, tiCmd = m.textarea.Update(msg)
 	m.viewport, vpCmd = m.viewport.Update(msg)
-	// 检查msg大小内存中只保存前100条
-	if len(m.messages) > 100 {
-		m.messages = m.messages[:100]
+	// 检查msg大小内存中只保存前1001条1
+	mLen := len(m.messages)
+	if mLen > 10 {
+		m.messages = m.messages[mLen-10:]
 	}
 
 	switch msg := msg.(type) {
@@ -149,7 +150,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case NetInMsg:
 		elems := m.receiveStyle.Render("receive:") + string(msg)
-		fmt.Println([]byte(elems))
 		m.messages = append(m.messages, elems)
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
