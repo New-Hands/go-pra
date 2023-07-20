@@ -59,6 +59,9 @@ var cmdMap = map[string]model.NetType{
 	"udp":       model.UDP,
 }
 
+// 记录上一次数据来源
+var lastMsg *model.MsgForm
+
 // CommonProcess 指令模板方式处理
 func CommonProcess(cmd *cobra.Command, args []string) {
 	use := cmd.Use
@@ -99,12 +102,18 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 			}
 		}
 
-		// 发送消息
-		err := net.Write(&model.MsgTo{
+		// 不考虑并 只需保持发送地址和显示一致即可
+		to := &model.MsgTo{
 			Ip:   FlagContext.Ip,
 			Port: FlagContext.Port,
 			Data: toBytes,
-		})
+		}
+		if lastMsg != nil {
+			to.Ip = strings.Clone(lastMsg.Ip)
+			to.Port = lastMsg.Port
+		}
+		err := net.Write(to)
+
 		if err != nil {
 			// 连接断开
 			if err == io.EOF {
@@ -113,13 +122,21 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 			return "", err
 		}
 
-		sendTo := "(" + FlagContext.Ip + ":" + strconv.Itoa(FlagContext.Port) + "):" + input
+		sendTo := "(" + to.Ip + ":" + strconv.Itoa(to.Port) + "):" + input
 		dlog.Log(open, sendTo)
 
 		return sendTo, nil
 	}))
 
 	// 读取网络组件数据 发送到终端
+	readNetData(net, p, open)
+
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func readNetData(net NetCh, p *tea.Program, open *os.File) {
 	go func() {
 		for true {
 			read, err := net.Read()
@@ -130,6 +147,10 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 				}
 				continue
 			}
+
+			// changeLastMsg
+			lastMsg = read
+
 			switch FlagContext.Encode {
 			case "ascii":
 				recv := read.ToString()
@@ -142,8 +163,4 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 			}
 		}
 	}()
-
-	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
-	}
 }

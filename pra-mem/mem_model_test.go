@@ -64,3 +64,51 @@ func funCall2(test MemTest) {
 	fmt.Printf("intAddr new %p\n", test.intAddr)
 	fmt.Printf("intAddr str new %p\n", &test.intAddr)
 }
+
+// 修改指针数据里面的基本数据
+// 验证赋值后的基本数据是否被影响
+func TestChangeRefBasic(t *testing.T) {
+	t1 := MemTest{
+		str:  "str",
+		intT: 1,
+	}
+
+	test := &t1
+
+	t3 := &MemTest{
+		str:  test.str,
+		intT: test.intT,
+	}
+
+	fmt.Println(t3)
+
+	test = &MemTest{
+		str:  "str2",
+		intT: 2,
+	}
+
+	fmt.Println(t3)
+}
+
+func TestChangeRefBasic2(t *testing.T) {
+	t1 := MemTest{
+		str:  "str",
+		intT: 1,
+	}
+
+	test := &t1
+
+	t3 := test
+	fmt.Println(t3)
+
+	// change
+	test.intT = 2
+	test.str = "str2"
+
+	fmt.Println(t3)
+}
+
+func changeRefBasic(test *MemTest) {
+	test.intT = 2
+	test.str = "changeStr"
+}
