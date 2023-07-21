@@ -5,6 +5,7 @@ package ui
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,6 +13,7 @@ import (
 	"github.com/muesli/termenv"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type NetInMsg string
@@ -30,6 +32,7 @@ type Model struct {
 	viewport     viewport.Model
 	messages     []string
 	textarea     textarea.Model
+	spinner      spinner.Model
 	senderStyle  lipgloss.Style
 	errorStyle   lipgloss.Style
 	receiveStyle lipgloss.Style
@@ -81,12 +84,22 @@ func InitialModel(handle func(input string) (string, error)) Model {
 			key.WithHelp("↓", "down"),
 		),
 	}
-	vp.SetContent("netcli tool current profile: " + strconv.Itoa(int(profile)) + "\n")
+
+	sp := spinner.Spinner{
+		Frames: []string{".-..-..---..---.   .---..-.   .-.\n| .` || |- `| |'   | |  | |__ | |\n`-'`-'`---' `-'    `---'`----'`-'\nprofile " + strconv.Itoa(int(profile))},
+		FPS:    time.Minute,
+	}
+
+	withSpinner := spinner.WithSpinner(sp)
+	style := spinner.WithStyle(lipgloss.NewStyle().Bold(true).Italic(true).
+		Height(4).Foreground(lipgloss.Color("2")))
+	spModel := spinner.New(withSpinner, style)
 
 	return Model{
 		textarea:     ta,
 		messages:     []string{},
 		viewport:     vp,
+		spinner:      spModel,
 		senderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
 		receiveStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("3")),
 		errorStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("1")),
@@ -103,11 +116,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		tiCmd tea.Cmd
 		vpCmd tea.Cmd
+		spCmd tea.Cmd
 	)
 
 	// update child
 	m.textarea, tiCmd = m.textarea.Update(msg)
 	m.viewport, vpCmd = m.viewport.Update(msg)
+	m.spinner, spCmd = m.spinner.Update(msg)
+
 	// 检查msg大小内存中只保存前50条
 	mLen := len(m.messages)
 	if mLen > 50 {
@@ -139,9 +155,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.textarea.SetWidth(msg.Width)
 		m.viewport.Width = msg.Width
 		minH := 5
-		if msg.Width > 10 {
+
+		otherH := m.textarea.Height() + m.spinner.Style.GetHeight()
+		if (msg.Height - (otherH + 4)) > minH {
 			// 减去 textArea
-			minH = msg.Height - 5
+			minH = msg.Height - otherH - 4
+
 		}
 		m.viewport.Height = minH
 
@@ -160,13 +179,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.GotoBottom()
 	}
 
-	return m, tea.Batch(tiCmd, vpCmd)
+	return m, tea.Batch(tiCmd, vpCmd, spCmd)
 }
 
 // View 网络面板视图渲染数据
 func (m Model) View() string {
+	view := m.spinner.View()
 	return fmt.Sprintf(
-		"%s\n\n%s",
+		"%s\n%s\n\n%s",
+		view,
 		m.viewport.View(),
 		m.textarea.View(),
 	) + "\n\n"
