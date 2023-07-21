@@ -61,7 +61,14 @@ func (netT *TcpServer) Start() error {
 
 func (netT *TcpServer) Read() (*model.MsgForm, error) {
 	// 从channel 获取数据
-	return <-netT.channel, nil
+	form := <-netT.channel
+
+	// 没有获取到数据 说明断开连接
+	if form.Data == nil {
+		return nil, errors.New("(" + form.Ip + ":" + strconv.Itoa(form.Port) + "):disconnect")
+	}
+
+	return form, nil
 }
 
 func (netT *TcpServer) Write(to *model.MsgTo) error {
@@ -95,19 +102,27 @@ func (netT *TcpServer) readClient(conn net.Conn) {
 	// 获取客户端数据
 	go func() {
 		for true {
+			addPort, _ := netip.ParseAddrPort(conn.RemoteAddr().String())
+
 			bytes := make([]byte, 10240, 10240)
 			rNum, err := conn.Read(bytes)
 			if err != nil {
 				// 关闭连接
 				if err == io.EOF {
 					_ = conn.Close()
+
+					// 写入data nil msg 说明断开连接
+					netT.channel <- &model.MsgForm{
+						Ip:   addPort.Addr().String(),
+						Port: int(addPort.Port()),
+					}
+
 					// 删除记录
 					delete(netT.connMap, conn.RemoteAddr().String())
 					// 结束轮询获取
 					return
 				}
 			}
-			addPort, _ := netip.ParseAddrPort(conn.RemoteAddr().String())
 			// 将数据写入通道
 			netT.channel <- &model.MsgForm{
 				Data: bytes[:rNum],

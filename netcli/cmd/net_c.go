@@ -156,7 +156,7 @@ func readNetData(net NetCh, p *tea.Program, open *os.File) {
 		for true {
 			read, err := net.Read()
 			if nil != err {
-				p.Send(ui.NetInMsg(err.Error()))
+				p.Send(err)
 				if err == io.EOF {
 					p.Quit()
 				}

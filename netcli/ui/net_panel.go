@@ -144,9 +144,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			minH = msg.Height - 5
 		}
 		m.viewport.Height = minH
+
 	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
+		m.messages = append(m.messages, m.errorStyle.Render("error:")+msg.Error())
+		m.viewport.SetContent(strings.Join(m.messages, "\n"))
+		m.viewport.GotoBottom()
+
 		return m, nil
 	case NetInMsg:
 		elems := m.receiveStyle.Render("receive:") + string(msg)
