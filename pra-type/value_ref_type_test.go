@@ -107,17 +107,7 @@ func TestString(t *testing.T) {
 	for i := 0; i < len(sample); i++ {
 		fmt.Printf("%x ", sample[i])
 	}
-	fmt.Printf("\n")
-	fmt.Println("Printf with %x:")
-	fmt.Printf("%x \n", sample)
 
-	fmt.Println("Printf with % x:")
-	fmt.Printf("% x\n", sample)
-
-	fmt.Println("Printf with %q:")
-	fmt.Printf("%q\n", sample)
-
-	fmt.Println("Printf with %+q:")
 	fmt.Printf("%+q\n", sample)
 	//UTF-8 and string literals
 	fmt.Printf("%s", "ddd")
@@ -125,9 +115,24 @@ func TestString(t *testing.T) {
 
 type Ts struct {
 	n string
+	i int
+}
+
+func (t Ts) funCall() {
+	fmt.Printf("%p %p %p\n", &t, &t.n, &t.i)
 }
 
 func TestSlice(t *testing.T) {
 	bytes := [...]byte{'a', 'b', 'c'}
-	fmt.Printf("%p \n", bytes)
+	fmt.Printf("%p \n", &bytes)
+}
+
+func TestStructFunCall(t *testing.T) {
+	st := &Ts{
+		n: "dd",
+	}
+
+	fmt.Printf("%p %p %p\n", &st, &st.n, &st.i)
+	st.funCall()
+
 }

@@ -48,7 +48,7 @@ func InitialModel(handle func(input string) (string, error)) Model {
 	ta.Placeholder = "Send a message..."
 	ta.Focus()
 	ta.Prompt = "┃ "
-	ta.CharLimit = 280
+	ta.CharLimit = 20480
 	ta.SetWidth(100)
 	ta.SetHeight(2)
 	// Remove cursor line styling
@@ -130,6 +130,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.messages = m.messages[mLen-50:]
 	}
 
+	tWidth := m.viewport.Width
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -140,10 +141,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 数据处理
 			pInput, err := m.inputHandle(m.textarea.Value())
 			if err != nil {
-				m.messages = append(m.messages, m.errorStyle.Render("error:")+err.Error())
+				// 替换添加样式
+				elems := m.errorStyle.Render("error:")
+				newMsg := splitMsg(tWidth, "error:"+err.Error())
+				newMsg[0] = strings.Replace(newMsg[0], "error", elems, -1)
+				appendMsg(&m.messages, newMsg)
 			} else {
 				// message addr change
-				m.messages = append(m.messages, m.senderStyle.Render("send:")+pInput)
+				elems := m.senderStyle.Render("send:")
+				newMsg := splitMsg(tWidth, "send:"+pInput)
+				newMsg[0] = strings.Replace(newMsg[0], "send:", elems, -1)
+				appendMsg(&m.messages, newMsg)
 			}
 			m.viewport.SetContent(strings.Join(m.messages, "\n"))
 			m.textarea.Reset()
@@ -167,19 +175,51 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// We handle errors just like any other message
 	case errMsg:
 		m.err = msg
-		m.messages = append(m.messages, m.errorStyle.Render("error:")+msg.Error())
+		elems := m.errorStyle.Render("error:")
+		newMsg := splitMsg(tWidth, "error:"+msg.Error())
+		newMsg[0] = strings.Replace(newMsg[0], "error:", elems, -1)
+		appendMsg(&m.messages, newMsg)
+
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
-
 		return m, nil
 	case NetInMsg:
-		elems := m.receiveStyle.Render("receive:") + string(msg)
-		m.messages = append(m.messages, elems)
+		elems := m.receiveStyle.Render("receive:")
+		newMsg := splitMsg(tWidth, "receive:"+string(msg))
+		newMsg[0] = strings.Replace(newMsg[0], "receive:", elems, -1)
+		appendMsg(&m.messages, newMsg)
 		m.viewport.SetContent(strings.Join(m.messages, "\n"))
 		m.viewport.GotoBottom()
 	}
 
 	return m, tea.Batch(tiCmd, vpCmd, spCmd)
+}
+
+func appendMsg(oriMsg *[]string, newMsg []string) {
+	for i := 0; i < len(newMsg); i++ {
+		*oriMsg = append(*oriMsg, newMsg[i])
+	}
+}
+
+// 分割消息
+func splitMsg(widthLimit int, strMsg string) []string {
+	mLen := len(strMsg)
+
+	var msg []string
+
+	for true {
+		last := mLen - widthLimit
+		if last <= 0 {
+			return append(msg, strMsg)
+		} else {
+			msg = append(msg, strMsg[:widthLimit])
+			// 改变消息
+			strMsg = strMsg[widthLimit:]
+			mLen = last
+		}
+	}
+
+	return msg
 }
 
 // View 网络面板视图渲染数据

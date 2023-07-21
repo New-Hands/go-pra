@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"lstfight.cn/go-pra/netcli/model"
 	"net"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func TestClient(t *testing.T) {
-	dial, err := net.Dial("tcp", "127.0.0.1:6001")
+	dial, err := net.Dial("tcp", "10.194.50.30:6112")
 	if err != nil {
 		return
 	}
@@ -32,19 +34,45 @@ func TestClient(t *testing.T) {
 func TestWrapClient(t *testing.T) {
 	tcp := &Tcp{
 		NetParam: model.NetParam{
-			Ip:             "127.0.0.1",
-			Port:           6001,
+			Ip:             "10.194.50.30",
+			Port:           6112,
 			ReceiveTimeOut: 10,
 		},
 	}
 
-	err := tcp.Start()
-	if err != nil {
-		return
+	_ = tcp.Start()
+
+	go func() {
+		for true {
+			time.Sleep(time.Millisecond * 10)
+			_ = tcp.Write(&model.MsgTo{
+				Data: []byte("hello" + strconv.Itoa(time.Now().Second())),
+			})
+		}
+
+	}()
+	time.Sleep(time.Minute * 10)
+}
+
+func TestWrapClient2(t *testing.T) {
+	tcp := &Tcp{
+		NetParam: model.NetParam{
+			Ip:             "10.194.50.30",
+			Port:           6112,
+			ReceiveTimeOut: 10,
+		},
 	}
-	read, err := tcp.Read()
-	if err != nil {
-		return
-	}
-	fmt.Println(read)
+
+	_ = tcp.Start()
+
+	go func() {
+		for true {
+			time.Sleep(time.Millisecond * 10)
+			_ = tcp.Write(&model.MsgTo{
+				Data: []byte("hello" + strconv.Itoa(time.Now().Second())),
+			})
+		}
+
+	}()
+	time.Sleep(time.Minute * 10)
 }
