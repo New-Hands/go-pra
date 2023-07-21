@@ -67,9 +67,9 @@ func TestWrapClient2(t *testing.T) {
 
 	go func() {
 		for true {
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond * 1000)
 			_ = tcp.Write(&model.MsgTo{
-				Data: []byte("hello" + strconv.Itoa(time.Now().Second())),
+				Data: []byte("sdfddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddx" + strconv.Itoa(time.Now().Second())),
 			})
 		}
 

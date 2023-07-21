@@ -141,7 +141,11 @@ func CommonProcess(cmd *cobra.Command, args []string) {
 		dlog.Log(open, sendTo)
 
 		return sendTo, nil
-	}))
+	}),
+		tea.WithFilter(func(m tea.Model, msg tea.Msg) tea.Msg {
+
+			return msg
+		}))
 
 	// 读取网络组件数据 发送到终端
 	readNetData(net, p, open)

@@ -113,16 +113,16 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var (
-		tiCmd tea.Cmd
-		vpCmd tea.Cmd
-		spCmd tea.Cmd
-	)
+	//var (
+	//	tiCmd tea.Cmd
+	//	vpCmd tea.Cmd
+	//	spCmd tea.Cmd
+	//)
 
 	// update child
-	m.textarea, tiCmd = m.textarea.Update(msg)
-	m.viewport, vpCmd = m.viewport.Update(msg)
-	m.spinner, spCmd = m.spinner.Update(msg)
+	m.textarea, _ = m.textarea.Update(msg)
+	m.viewport, _ = m.viewport.Update(msg)
+	m.spinner, _ = m.spinner.Update(msg)
 
 	// 检查msg大小内存中只保存前50条
 	mLen := len(m.messages)
@@ -192,7 +192,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport.GotoBottom()
 	}
 
-	return m, tea.Batch(tiCmd, vpCmd, spCmd)
+	//return m, tea.Batch(tiCmd, vpCmd, spCmd)
+	return m, nil
 }
 
 func appendMsg(oriMsg *[]string, newMsg []string) {
